@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import json
@@ -7,6 +8,8 @@ import time
 from crypto_util import check_password
 
 from crypto_util import decrypt_message
+
+BASE_URL = "https://itsmetinku.pythonanywhere.com"
 
 with open("key.key", "rb") as f:
     key = f.read()
@@ -44,7 +47,7 @@ def reset_timer():
 # ---------------- Contact Book ---------------- #
 
 def fetch_contacts():
-    response = requests.get("http://127.0.0.1:5000/contacts")
+    response = requests.get(f"{BASE_URL}/contacts")
     if response.status_code == 200:
         return response.json()
     return []
@@ -70,7 +73,7 @@ def add_contact():
     name = simpledialog.askstring("Add Contact", "Enter name:")
     phone = simpledialog.askstring("Add Contact", "Enter phone:")
     if name and phone:
-        response = requests.post("http://127.0.0.1:5000/add", json={"name": name, "phone": phone})
+        response = requests.post(f"{BASE_URL}/add", json={"name": name, "phone": phone})
         if response.status_code == 200:
             refresh_contacts()
         elif response.status_code == 400:
@@ -88,7 +91,7 @@ def delete_selected_contact():
     index = selection[0]
 
     try:
-        response = requests.post("http://127.0.0.1:5000/delete", json={"index": index})
+        response = requests.post(f"{BASE_URL}/delete", json={"index": index})
         if response.status_code == 200 and response.json()["status"] == "success":
             messagebox.showinfo("Deleted", "Contact deleted successfully!")
             refresh_contacts()
@@ -106,7 +109,7 @@ def edit_contact():
         new_name = simpledialog.askstring("Edit Contact", "Enter new name:")
         new_phone = simpledialog.askstring("Edit Contact", "Enter new phone:")
         if new_name and new_phone:
-            requests.post("http://127.0.0.1:5000/edit", json={
+            requests.post(f"{BASE_URL}/edit", json={
                 "old_name": old_name,
                 "new_name": new_name,
                 "new_phone": new_phone
