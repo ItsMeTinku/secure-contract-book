@@ -32,7 +32,7 @@ logout_timer = None
 # ---------------- Auto Logout ---------------- #
 
 def auto_logout():
-    time.sleep(60)
+    time.sleep(1800)
     contact_frame.pack_forget()
     build_login_screen()
     messagebox.showinfo("Logged out", "You were logged out due to inactivity ⏳")
@@ -41,7 +41,7 @@ def reset_timer():
     global logout_timer
     if logout_timer:
         logout_timer.cancel()
-    logout_timer = threading.Timer(60, auto_logout)
+    logout_timer = threading.Timer(1800, auto_logout)
     logout_timer.start()
 
 # ---------------- Contact Book ---------------- #
@@ -173,7 +173,7 @@ def build_contact_book():
     tk.Button(btn_frame, text="Delete Contact", command=delete_selected_contact, bg="#F44336", fg="white", width=12).grid(row=0, column=2, padx=5)
     tk.Button(contact_frame, text="Export Contacts", command=export_contacts, bg="#607D8B", fg="white", width=30).pack(pady=(10, 5))
 
-    # Search bar
+    #------------Search bar ---------------#
     search_frame = tk.Frame(contact_frame)
     search_frame.pack(pady=(10, 5))
 
@@ -200,7 +200,7 @@ def build_contact_book():
     tk.Button(search_frame, text="Search", command=search, width=10).pack(side=tk.LEFT, padx=5)
     tk.Button(search_frame, text="Back", command=reset_search, width=10).pack(side=tk.LEFT)
 
-    # Contact list with scrollbar
+    #--------------Contact list with scrollbar -----------------#
     list_frame = tk.Frame(contact_frame)
     list_frame.pack(pady=10)
 
