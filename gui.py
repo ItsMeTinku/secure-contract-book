@@ -32,7 +32,7 @@ logout_timer = None
 # ---------------- Auto Logout ---------------- #
 
 def auto_logout():
-    time.sleep(1800)
+    time.sleep(300)
     contact_frame.pack_forget()
     build_login_screen()
     messagebox.showinfo("Logged out", "You were logged out due to inactivity ⏳")
@@ -41,7 +41,7 @@ def reset_timer():
     global logout_timer
     if logout_timer:
         logout_timer.cancel()
-    logout_timer = threading.Timer(1800, auto_logout)
+    logout_timer = threading.Timer(300, auto_logout)
     logout_timer.start()
 
 # ---------------- Contact Book ---------------- #
@@ -58,15 +58,22 @@ def refresh_contacts():
     contact_list.delete(0, tk.END)
     decrypted_contacts = []
 
+    all_contacts = []
+
     for contact in fetch_contacts():
         try:
             name = decrypt_message(contact['name'], key)
             phone = decrypt_message(contact['phone'], key)
-            contact_list.insert(tk.END, f"{name} - {phone}")
-            decrypted_contacts.append(contact)  # keep the original list aligned
+            all_contacts.append((name, phone, contact))  
         except:
-            contact_list.insert(tk.END, " Error decrypting contact")
-            decrypted_contacts.append(None)
+            continue
+
+    # Sort by decrypted name (A-Z)
+    all_contacts.sort(key=lambda x: x[0].lower())
+
+    for name, phone, original in all_contacts:
+        contact_list.insert(tk.END, f"{name} - {phone}")
+        decrypted_contacts.append(original)
 
 def add_contact():
     reset_timer()
