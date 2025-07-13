@@ -9,7 +9,7 @@ from crypto_util import check_password
 
 from crypto_util import decrypt_message
 
-BASE_URL = "https://itsmetinku.pythonanywhere.com"
+BASE_URL = "http://127.0.0.1:5000"
 
 with open("key.key", "rb") as f:
     key = f.read()
@@ -32,7 +32,7 @@ logout_timer = None
 # ---------------- Auto Logout ---------------- #
 
 def auto_logout():
-    time.sleep(300)
+    time.sleep(120)
     contact_frame.pack_forget()
     build_login_screen()
     messagebox.showinfo("Logged out", "You were logged out due to inactivity ⏳")
@@ -41,10 +41,38 @@ def reset_timer():
     global logout_timer
     if logout_timer:
         logout_timer.cancel()
-    logout_timer = threading.Timer(300, auto_logout)
+    logout_timer = threading.Timer(120, auto_logout)
     logout_timer.start()
 
 # ---------------- Contact Book ---------------- #
+def get_contact_input(title, default_name="", default_phone=""):
+    input_window = tk.Toplevel(root)
+    input_window.title(title)
+    input_window.geometry("300x150")
+    input_window.grab_set()  # Prevent interaction with other windows
+
+    tk.Label(input_window, text="Name:").pack(pady=(10, 0))
+    name_entry = tk.Entry(input_window)
+    name_entry.pack()
+    name_entry.insert(0, default_name)
+
+    tk.Label(input_window, text="Phone:").pack(pady=(10, 0))
+    phone_entry = tk.Entry(input_window)
+    phone_entry.pack()
+    phone_entry.insert(0, default_phone)
+
+    result = {"name": None, "phone": None}
+
+    def submit():
+        result["name"] = name_entry.get()
+        result["phone"] = phone_entry.get()
+        input_window.destroy()
+
+    tk.Button(input_window, text="Submit", command=submit).pack(pady=10)
+    input_window.wait_window()  
+
+    return result["name"], result["phone"]
+
 
 def fetch_contacts():
     response = requests.get(f"{BASE_URL}/contacts")
@@ -77,8 +105,7 @@ def refresh_contacts():
 
 def add_contact():
     reset_timer()
-    name = simpledialog.askstring("Add Contact", "Enter name:")
-    phone = simpledialog.askstring("Add Contact", "Enter phone:")
+    name, phone = get_contact_input("Add Contact")
     if name and phone:
         response = requests.post(f"{BASE_URL}/add", json={"name": name, "phone": phone})
         if response.status_code == 200:
@@ -113,8 +140,7 @@ def edit_contact():
     selected = contact_list.curselection()
     if selected:
         old_name = contact_list.get(selected[0]).split(" - ")[0]
-        new_name = simpledialog.askstring("Edit Contact", "Enter new name:")
-        new_phone = simpledialog.askstring("Edit Contact", "Enter new phone:")
+        new_name, new_phone = get_contact_input("Edit Contact")
         if new_name and new_phone:
             requests.post(f"{BASE_URL}/edit", json={
                 "old_name": old_name,

@@ -7,14 +7,14 @@ with open("key.key", "rb") as f:
 
 app = Flask(__name__)
 
-# Load user credentials from JSON
+# ---------- Load user details from JSON ------------#
 try:
     with open("user_db.json", "r") as f:
         user_data = json.load(f)
 except:
     user_data = {"username": "admin", "password": hash_password("admin123")}
 
-#  Login route
+#  Login 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
@@ -26,7 +26,7 @@ def login():
     else:
         return jsonify({"status": "fail"}), 401
 
-#  Add Contact
+# -------------- Add Contact -------------- #
 @app.route("/add", methods=["POST"])
 def add_contact():
     data = request.get_json()
@@ -39,7 +39,7 @@ def add_contact():
     except:
         contacts = []
 
-    # Check duplicates by decrypting existing contacts
+    # ----------- Check duplicates by decrypting existing contacts -----------#
     for contact in contacts:
         try:
             existing_name = decrypt_message(contact["name"], key)
@@ -47,9 +47,9 @@ def add_contact():
             if existing_name == new_name and existing_phone == new_phone:
                 return jsonify({"message": "Duplicate contact"}), 400
         except:
-            continue  # skip if any contact fails to decrypt
+            continue  
 
-    # Encrypt and save
+    # ------------- Encrypt and save ----------#
     enc_name = encrypt_message(new_name, key)
     enc_phone = encrypt_message(new_phone, key)
     contacts.append({"name": enc_name, "phone": enc_phone})
@@ -59,16 +59,16 @@ def add_contact():
 
     return jsonify({"message": "Contact added successfully"})
 
-    # Add contact
+    #------------ Add contact --------------#
     contacts.append({"name": name, "phone": phone})
 
-    # Save updated list
+    #---------------- Save updated list ------------#
     with open("contact_db.json", "w") as f:
         json.dump(contacts, f)
 
     return jsonify({"message": "Contact added successfully"})
 
-#  Get Contacts
+# ------------- Get Contacts -----------------#
 @app.route("/contacts")
 def get_contacts():
     try:
@@ -78,7 +78,7 @@ def get_contacts():
         contacts = []
     return jsonify(contacts)
 
-#  Delete Contact (Optional Future Feature)
+# ------------- Delete Contact --------------# 
 @app.route("/delete", methods=["POST"])
 def delete_contact():
     data = request.get_json()
@@ -109,7 +109,7 @@ def edit_contact():
 
     updated = False
 
-    # Decrypt, match, and replace
+    # ----------- Decrypt, match, and replace -------------#
     for i in range(len(contacts)):
         try:
             name_dec = decrypt_message(contacts[i]["name"], key)
@@ -128,6 +128,6 @@ def edit_contact():
     else:
         return jsonify({"status": "not_found"}), 404
 
-#  Run Server
+# ---------------- Run Server -----------------#
 if __name__ == "__main__":
     app.run(debug=True)
