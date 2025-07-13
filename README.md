@@ -11,7 +11,7 @@ A *Secure Contact Book* built with Python 🐍 that combines *Tkinter GUI, **Fla
 - ⏳ Auto logout after inactivity
 - 📜 Scrollable contact list
 - 📤 Backup/export contacts
-- ☁ Cloud-hosted Flask server (PythonAnywhere)
+- ☁ Cloud-hosted Flask server (PythonAnywhere) this feature is stopped due to sum reasons please cooperate with me 
 - 📦 GUI converted into standalone .exe (optional)
 
 ---
