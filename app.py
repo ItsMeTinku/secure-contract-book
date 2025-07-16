@@ -12,7 +12,7 @@ try:
     with open("user_db.json", "r") as f:
         user_data = json.load(f)
 except:
-    user_data = {"username": "admin", "password": hash_password("admin123")}
+    user_data = {"username": "  ", "password": hash_password("  ")}
 
 #  Login 
 @app.route("/login", methods=["POST"])
@@ -57,16 +57,7 @@ def add_contact():
     with open("contact_db.json", "w") as f:
         json.dump(contacts, f)
 
-    return jsonify({"message": "Contact added successfully"})
-
-    #------------ Add contact --------------#
-    contacts.append({"name": name, "phone": phone})
-
-    #---------------- Save updated list ------------#
-    with open("contact_db.json", "w") as f:
-        json.dump(contacts, f)
-
-    return jsonify({"message": "Contact added successfully"})
+    return jsonify({"message": "Contact added successfully"})#
 
 # ------------- Get Contacts -----------------#
 @app.route("/contacts")
