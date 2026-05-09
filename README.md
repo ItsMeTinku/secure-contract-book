@@ -1,10 +1,49 @@
-# 🔐 Secure Contact Book v2
+<p align="center">
+  <img src="static/screenshots/banner.png" alt="SecureVault Contact Book v2 Banner" width="100%">
+</p>
 
-A production-grade encrypted contact manager — upgraded from a basic Tkinter desktop app to a full-stack web application with advanced security, a modern UI, and enterprise-ready features.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10+-blue?style=for-the-badge&logo=python&logoColor=white">
+  <img src="https://img.shields.io/badge/Flask-REST%20API-black?style=for-the-badge&logo=flask&logoColor=white">
+  <img src="https://img.shields.io/badge/Encryption-AES--256-cyan?style=for-the-badge&logo=letsencrypt&logoColor=white">
+  <img src="https://img.shields.io/badge/Auth-JWT%20Bearer-purple?style=for-the-badge&logo=jsonwebtokens&logoColor=white">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge">
+</p>
+
+<h3 align="center">A production-grade encrypted contact manager — full-stack web app with AES-256 field encryption, JWT authentication, multi-user isolation, and a sleek dark UI.</h3>
 
 ---
 
-## What's New in v2
+## 📸 Screenshots
+
+### 🔐 Login Page
+<p align="center">
+  <img src="static/screenshots/screenshot_login.png" alt="Login Page" width="90%">
+</p>
+
+### 📋 Contacts Dashboard
+<p align="center">
+  <img src="static/screenshots/screenshot_dashboard.png" alt="Contacts Dashboard" width="90%">
+</p>
+
+### ➕ Add Contact Modal
+<p align="center">
+  <img src="static/screenshots/screenshot_add_contact.png" alt="Add Contact Modal" width="90%">
+</p>
+
+### ⚙️ Admin Panel
+<p align="center">
+  <img src="static/screenshots/screenshot_admin.png" alt="Admin Panel" width="90%">
+</p>
+
+### 📜 Audit Log
+<p align="center">
+  <img src="static/screenshots/screenshot_audit.png" alt="Audit Log" width="90%">
+</p>
+
+---
+
+## ✨ What's New in v2
 
 | Feature | v1 (Basic) | v2 (Advanced) |
 |---|---|---|
@@ -18,14 +57,15 @@ A production-grade encrypted contact manager — upgraded from a basic Tkinter d
 | **Import/Export** | TXT export only | CSV import + export |
 | **Audit Log** | None | Full CRUD audit trail (last 500 events) |
 | **Multi-user** | Single user | Admin can create/delete users with roles |
+| **Data Isolation** | Shared | Each user sees only their own contacts |
 | **Rate Limiting** | None | In-memory rate limiter (login: 10/min) |
 | **Input Validation** | None | Phone regex, email format, length limits |
-| **Duplicate Check** | Name+Phone | Case-insensitive name+phone |
+| **Duplicate Check** | Name+Phone | Case-insensitive name+phone per user |
 | **API** | Basic Flask | RESTful JSON API with JWT Bearer auth |
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # 1. Install dependencies
@@ -45,7 +85,7 @@ Default credentials (if you skip setup): **admin / admin123**
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 secure_contact_book_v2/
@@ -58,12 +98,13 @@ secure_contact_book_v2/
 ├── contact_db.json   # Encrypted contact records
 ├── audit_log.json    # Audit trail (last 500 entries)
 └── static/
-    └── index.html    # Single-page frontend
+    ├── index.html    # Single-page frontend
+    └── screenshots/  # README screenshots
 ```
 
 ---
 
-## Security Model
+## 🛡️ Security Model
 
 ### Password Hashing
 - **Algorithm**: PBKDF2-HMAC-SHA256 with a random 32-byte salt
@@ -80,13 +121,18 @@ secure_contact_book_v2/
 - **Expiry**: 1 hour (configurable via `JWT_EXPIRY` in `app.py`)
 - **Transport**: Bearer token in `Authorization` header — no cookies, no CSRF risk
 
+### Data Isolation
+- Each user can **only see, add, edit, and delete their own contacts**
+- Admin users have additional access to the user management panel
+- Duplicate detection is scoped per-user
+
 ### Rate Limiting
 - Login endpoint: 10 attempts per 60 seconds per IP
 - Backed by in-memory dict; swap for Redis in production
 
 ---
 
-## API Reference
+## 📡 API Reference
 
 All endpoints (except `/api/login`) require:
 ```
@@ -124,7 +170,7 @@ Authorization: Bearer <token>
 
 ---
 
-## Production Checklist
+## ✅ Production Checklist
 
 - [ ] Set `JWT_SECRET` environment variable instead of auto-generated
 - [ ] Disable Flask debug mode (`debug=False` is already set)
@@ -136,7 +182,7 @@ Authorization: Bearer <token>
 
 ---
 
-## CSV Import Format
+## 📥 CSV Import Format
 
 ```csv
 name,phone,email,address,company,notes,tags,favorite
