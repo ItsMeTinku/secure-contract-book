@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secure Contact Book v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ─── Design Tokens ──────────────────────────────────────────── */
+:root {
+  --bg:          #0a0c10;
+  --surface:     #111318;
+  --surface2:    #181c24;
+  --border:      #1e2530;
+  --border2:     #2a3040;
+  --accent:      #00e5ff;
+  --accent2:     #7c3aed;
+  --accent3:     #10b981;
+  --danger:      #ef4444;
+  --warn:        #f59e0b;
+  --text:        #e2e8f0;
+  --text2:       #94a3b8;
+  --text3:       #475569;
+  --mono:        'Space Mono', monospace;
+  --sans:        'Syne', sans-serif;
+  --glow:        0 0 20px rgba(0,229,255,.15);
+  --glow2:       0 0 40px rgba(0,229,255,.08);
+  --radius:      10px;
+  --radius2:     6px;
+  --transition:  .18s cubic-bezier(.4,0,.2,1);
+}
+
+/* ─── Reset & Base ───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ─── Background Grid ────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+/* ─── Typography ─────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-family: var(--sans); font-weight: 800; }
+.mono { font-family: var(--mono); }
+
+/* ─── Buttons ────────────────────────────────────────────────── */
+button { cursor: pointer; border: none; font-family: var(--sans); font-weight: 600; transition: var(--transition); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius2); font-size: 13px;
+  transition: var(--transition);
+}
+.btn-primary {
+  background: var(--accent); color: #000;
+}
+.btn-primary:hover { background: #33ecff; box-shadow: 0 0 16px rgba(0,229,255,.4); }
+.btn-ghost {
+  background: transparent; color: var(--text2); border: 1px solid var(--border2);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,.05); }
+.btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-success { background: rgba(16,185,129,.15); color: var(--accent3); border: 1px solid rgba(16,185,129,.3); }
+.btn-success:hover { background: var(--accent3); color: #000; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-icon { padding: 7px; border-radius: var(--radius2); display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; }
+
+/* ─── Inputs ─────────────────────────────────────────────────── */
+input, textarea, select {
+  font-family: var(--sans);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius2);
+  padding: 9px 13px;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+  transition: var(--transition);
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0,229,255,.12);
+}
+input::placeholder { color: var(--text3); }
+textarea { resize: vertical; min-height: 72px; }
+label { font-size: 12px; color: var(--text2); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; display: block; margin-bottom: 5px; }
+
+/* ─── Cards ──────────────────────────────────────────────────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  transition: var(--transition);
+}
+.card:hover { border-color: var(--border2); }
+
+/* ─── Badge / Tags ───────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  background: rgba(0,229,255,.1); color: var(--accent); border: 1px solid rgba(0,229,255,.2);
+  font-family: var(--mono);
+}
+.badge-purple { background: rgba(124,58,237,.15); color: #a78bfa; border-color: rgba(124,58,237,.3); }
+.badge-green  { background: rgba(16,185,129,.1); color: var(--accent3); border-color: rgba(16,185,129,.25); }
+.badge-red    { background: rgba(239,68,68,.1);  color: var(--danger);  border-color: rgba(239,68,68,.25); }
+.badge-warn   { background: rgba(245,158,11,.1); color: var(--warn);    border-color: rgba(245,158,11,.25); }
+
+/* ─── Toast ──────────────────────────────────────────────────── */
+#toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast {
+  font-family: var(--mono); font-size: 13px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--text); padding: 12px 18px; border-radius: var(--radius);
+  opacity: 0; transform: translateY(8px);
+  transition: all .3s ease; pointer-events: all;
+  max-width: 320px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { border-color: var(--accent3); color: var(--accent3); }
+.toast.error   { border-color: var(--danger);  color: var(--danger); }
+.toast.warn    { border-color: var(--warn);    color: var(--warn); }
+
+/* ─── Modal ──────────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: var(--transition);
+}
+.modal-backdrop.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 14px; padding: 28px; width: 100%; max-width: 540px;
+  max-height: 90vh; overflow-y: auto;
+  transform: scale(.95); transition: var(--transition);
+  box-shadow: 0 24px 64px rgba(0,0,0,.6), var(--glow);
+}
+.modal-backdrop.open .modal { transform: scale(1); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+.modal-title { font-size: 18px; font-weight: 800; }
+.modal-close { background: none; border: none; color: var(--text3); font-size: 20px; cursor: pointer; padding: 4px; line-height: 1; }
+.modal-close:hover { color: var(--danger); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-group { display: flex; flex-direction: column; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ─── Layout ─────────────────────────────────────────────────── */
+#app { position: relative; z-index: 1; min-height: 100vh; }
+
+/* ─── Login Page ─────────────────────────────────────────────── */
+#loginPage {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 24px;
+}
+.login-box {
+  width: 100%; max-width: 400px;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 40px;
+  box-shadow: 0 32px 80px rgba(0,0,0,.7), var(--glow2);
+}
+.login-logo {
+  text-align: center; margin-bottom: 32px;
+}
+.login-logo-icon {
+  width: 64px; height: 64px; margin: 0 auto 16px;
+  background: linear-gradient(135deg, rgba(0,229,255,.15), rgba(124,58,237,.15));
+  border: 1px solid rgba(0,229,255,.3); border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+}
+.login-logo h1 { font-size: 22px; font-weight: 800; }
+.login-logo h1 span { color: var(--accent); }
+.login-logo p { color: var(--text3); font-family: var(--mono); font-size: 12px; margin-top: 4px; }
+.login-form { display: flex; flex-direction: column; gap: 14px; }
+.login-btn {
+  width: 100%; padding: 12px; font-size: 15px;
+  background: var(--accent); color: #000; border-radius: var(--radius);
+  font-weight: 800; letter-spacing: .04em;
+  transition: var(--transition);
+}
+.login-btn:hover { background: #33ecff; box-shadow: 0 0 24px rgba(0,229,255,.5); }
+.login-err { color: var(--danger); font-family: var(--mono); font-size: 12px; text-align: center; }
+
+/* ─── Main App ───────────────────────────────────────────────── */
+#mainApp { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.sidebar {
+  width: 220px; min-height: 100vh; flex-shrink: 0;
+  background: var(--surface); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; padding: 20px 0;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.sidebar-logo h2 { font-size: 16px; font-weight: 800; }
+.sidebar-logo h2 span { color: var(--accent); }
+.sidebar-logo p { font-family: var(--mono); font-size: 10px; color: var(--text3); margin-top: 2px; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; color: var(--text2); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: var(--transition); border-left: 2px solid transparent;
+  background: none;
+  text-align: left; width: 100%;
+}
+.nav-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(0,229,255,.06); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.sidebar-section { padding: 6px 20px; font-size: 10px; color: var(--text3); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-top: 8px; }
+.sidebar-spacer { flex: 1; }
+.sidebar-user { padding: 16px 20px; border-top: 1px solid var(--border); }
+.sidebar-user-name { font-size: 13px; font-weight: 700; }
+.sidebar-user-role { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.sidebar-user-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+/* Main Content */
+.main-content { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.topbar {
+  padding: 16px 28px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px; background: var(--surface);
+  position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 18px; font-weight: 800; flex: 1; }
+.page-body { padding: 28px; flex: 1; overflow-y: auto; }
+
+/* ─── Stats Bar ──────────────────────────────────────────────── */
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-val { font-size: 28px; font-weight: 800; font-family: var(--mono); color: var(--accent); }
+.stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); font-weight: 700; }
+
+/* ─── Toolbar ────────────────────────────────────────────────── */
+.toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.search-wrap { flex: 1; min-width: 200px; position: relative; }
+.search-wrap input { padding-left: 36px; }
+.search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; pointer-events: none; }
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--text2);
+  cursor: pointer; transition: var(--transition);
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.active { background: rgba(0,229,255,.1); border-color: var(--accent); color: var(--accent); }
+
+/* ─── Contact Grid ───────────────────────────────────────────── */
+.contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.contact-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  cursor: pointer; transition: var(--transition); position: relative;
+  overflow: hidden;
+}
+.contact-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  opacity: 0; transition: var(--transition);
+}
+.contact-card:hover { border-color: var(--border2); transform: translateY(-1px); box-shadow: 0 8px 32px rgba(0,0,0,.3); }
+.contact-card:hover::before { opacity: 1; }
+.cc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.cc-avatar {
+  width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; font-family: var(--mono);
+}
+.cc-info { flex: 1; min-width: 0; }
+.cc-name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-company { font-size: 12px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-fav { position: absolute; top: 14px; right: 14px; font-size: 14px; color: var(--text3); background: none; border: none; cursor: pointer; transition: var(--transition); }
+.cc-fav.active { color: var(--warn); }
+.cc-fav:hover { color: var(--warn); }
+.cc-field { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--text2); margin-bottom: 4px; }
+.cc-field .ico { width: 16px; text-align: center; color: var(--text3); font-size: 12px; }
+.cc-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
+.cc-actions { display: flex; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); opacity: 0; transition: var(--transition); }
+.contact-card:hover .cc-actions { opacity: 1; }
+
+/* ─── Empty State ────────────────────────────────────────────── */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text3); }
+.empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: .4; }
+.empty-state h3 { font-size: 18px; color: var(--text2); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; }
+
+/* ─── Audit Log ──────────────────────────────────────────────── */
+.audit-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
+.audit-table th { padding: 10px 14px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--text3); border-bottom: 1px solid var(--border); }
+.audit-table td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.audit-table tr:hover td { background: var(--surface2); }
+.action-badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+
+/* ─── Admin Panel ────────────────────────────────────────────── */
+.user-list { display: flex; flex-direction: column; gap: 10px; }
+.user-row {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius2); padding: 12px 16px;
+}
+.user-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(124,58,237,.2); border: 1px solid rgba(124,58,237,.3); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #a78bfa; flex-shrink: 0; }
+.user-info { flex: 1; }
+.user-name { font-weight: 700; font-size: 14px; }
+.user-meta { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+/* ─── Session Timer ──────────────────────────────────────────── */
+.session-timer { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.session-timer.warn { color: var(--warn); }
+.session-timer.crit { color: var(--danger); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+
+/* ─── Spinner ────────────────────────────────────────────────── */
+.spinner { width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── Misc ───────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.text-muted { color: var(--text3); }
+.text-accent { color: var(--accent); }
+.flex { display: flex; } .items-center { align-items: center; } .gap-2 { gap: 8px; } .gap-3 { gap: 12px; }
+.ml-auto { margin-left: auto; }
+select { cursor: pointer; }
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .sidebar { width: 60px; }
+  .nav-item span, .sidebar-logo p, .sidebar-logo h2, .sidebar-section, .sidebar-user-name, .sidebar-user-role { display: none; }
+  .nav-item { padding: 12px; justify-content: center; }
+  .sidebar-user-actions { justify-content: center; }
+  .form-grid { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="toastContainer"></div>
+
+<!-- ─── LOGIN PAGE ──────────────────────────────────────────── -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">🔐</div>
+      <h1>Secure<span>Vault</span></h1>
+      <p>CONTACT BOOK v2.0 // ENCRYPTED</p>
+    </div>
+    <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>Username</label>
+        <input id="loginUser" type="text" placeholder="Enter username" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="loginPass" type="password" placeholder="Enter password" autocomplete="current-password" required>
+      </div>
+      <div id="loginErr" class="login-err hidden"></div>
+      <button class="login-btn" type="submit" id="loginBtn">AUTHENTICATE</button>
+    </form>
+    <div style="margin-top:16px; text-align:center; font-family:var(--mono); font-size:11px; color:var(--text3);">
+      All data is AES-256 encrypted at rest
+    </div>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ─────────────────────────────────────────────── -->
+<div id="mainApp" class="hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h2>Secure<span>Vault</span></h2>
+      <p>ENCRYPTED</p>
+    </div>
+    <div class="sidebar-section">Navigation</div>
+    <button class="nav-item active" onclick="showPage('contacts')" id="nav-contacts">
+      <span class="nav-icon">📋</span><span>Contacts</span>
+    </button>
+    <button class="nav-item" onclick="showPage('favorites')" id="nav-favorites">
+      <span class="nav-icon">⭐</span><span>Favorites</span>
+    </button>
+    <button class="nav-item" onclick="showPage('audit')" id="nav-audit">
+      <span class="nav-icon">📜</span><span>Audit Log</span>
+    </button>
+    <button class="nav-item" id="nav-admin" onclick="showPage('admin')" style="display:none">
+      <span class="nav-icon">⚙️</span><span>Admin</span>
+    </button>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-user">
+      <div class="sidebar-user-name" id="sidebarUsername">—</div>
+      <div class="sidebar-user-role" id="sidebarRole">user</div>
+      <div class="sidebar-user-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="showChangePw()" title="Change Password">🔑</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="logout()" title="Logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Contacts</div>
+      <div id="sessionTimerEl" class="session-timer"></div>
+      <div id="topbarActions"></div>
+    </div>
+
+    <!-- Pages -->
+    <div class="page-body">
+
+      <!-- CONTACTS PAGE -->
+      <div id="page-contacts">
+        <div class="stats-bar" id="statsBar">
+          <div class="stat-card"><div class="stat-val" id="statTotal">—</div><div class="stat-label">Total</div></div>
+          <div class="stat-card"><div class="stat-val" id="statFavs">—</div><div class="stat-label">Favorites</div></div>
+          <div class="stat-card"><div class="stat-val" id="statFiltered">—</div><div class="stat-label">Shown</div></div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input id="searchInput" type="search" placeholder="Search by name, phone, email, company…" oninput="debounceSearch()">
+          </div>
+          <select id="sortSelect" onchange="loadContacts()" style="width:150px">
+            <option value="name">Sort: Name A-Z</option>
+            <option value="name_desc">Sort: Name Z-A</option>
+            <option value="created">Sort: Oldest</option>
+            <option value="created_desc">Sort: Newest</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" onclick="toggleFavFilter()" id="favFilterBtn">⭐ Favorites</button>
+          <button class="btn btn-success btn-sm" onclick="openImportDialog()">⬆ Import</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ Export</button>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Contact</button>
+        </div>
+
+        <div id="tagFilterRow" class="filter-chips" style="margin-bottom:14px"></div>
+        <div id="contactGrid" class="contact-grid"></div>
+        <div id="loadMoreWrap" class="hidden" style="text-align:center;margin-top:20px">
+          <button class="btn btn-ghost" onclick="loadMoreContacts()">Load more…</button>
+        </div>
+      </div>
+
+      <!-- FAVORITES PAGE -->
+      <div id="page-favorites" class="hidden">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input id="favSearchInput" type="search" placeholder="Search favorites…" oninput="loadFavorites()">
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Contact</button>
+        </div>
+        <div id="favGrid" class="contact-grid"></div>
+      </div>
+
+      <!-- AUDIT PAGE -->
+      <div id="page-audit" class="hidden">
+        <div class="card" style="overflow-x:auto">
+          <table class="audit-table">
+            <thead><tr>
+              <th>Time</th><th>User</th><th>Action</th><th>Detail</th>
+            </tr></thead>
+            <tbody id="auditBody"></tbody>
+          </table>
+          <div id="auditPagination" style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;font-size:13px;color:var(--text3)"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN PAGE -->
+      <div id="page-admin" class="hidden">
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex:1;min-width:300px">
+            <h3 style="margin-bottom:14px">Users</h3>
+            <div id="userList" class="user-list"></div>
+          </div>
+          <div class="card" style="width:280px">
+            <h3 style="margin-bottom:16px">Create User</h3>
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Username</label>
+              <input id="newUsername" type="text" placeholder="username">
+            </div>
+            <div class="form-group" style="margin-bottom:12px">
+              <label>Password</label>
+              <input id="newPassword" type="password" placeholder="min 8 chars">
+            </div>
+            <div class="form-group" style="margin-bottom:14px">
+              <label>Role</label>
+              <select id="newRole"><option value="user">User</option><option value="admin">Admin</option></select>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="createUser()">Create User</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── ADD/EDIT CONTACT MODAL ───────────────────────────────── -->
+<div class="modal-backdrop" id="contactModal" onclick="closeOnBackdrop(event,'contactModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Contact</div>
+      <button class="modal-close" onclick="closeModal('contactModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Name *</label>
+        <input id="fName" type="text" placeholder="Full name">
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <input id="fPhone" type="tel" placeholder="+1 555 000 0000">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input id="fEmail" type="email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label>Company</label>
+        <input id="fCompany" type="text" placeholder="Organisation">
+      </div>
+      <div class="form-group full">
+        <label>Address</label>
+        <input id="fAddress" type="text" placeholder="Street, City, Country">
+      </div>
+      <div class="form-group full">
+        <label>Notes</label>
+        <textarea id="fNotes" placeholder="Any notes…"></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Tags (comma-separated)</label>
+        <input id="fTags" type="text" placeholder="work, friend, vip">
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input id="fFavorite" type="checkbox" style="width:auto;margin:0"> Mark as Favorite
+        </label>
+      </div>
+    </div>
+    <div id="modalErr" class="login-err hidden" style="margin-top:10px"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('contactModal')">Cancel</button>
+      <button class="btn btn-primary" id="modalSubmitBtn" onclick="submitContact()">Save Contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CHANGE PASSWORD MODAL ────────────────────────────────── -->
+<div class="modal-backdrop" id="changePwModal" onclick="closeOnBackdrop(event,'changePwModal')">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title">Change Password</div>
+      <button class="modal-close" onclick="closeModal('changePwModal')">✕</button>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Current Password</label>
+      <input id="cpOld" type="password" placeholder="Current password">
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>New Password</label>
+      <input id="cpNew" type="password" placeholder="Min 8 characters">
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>Confirm New Password</label>
+      <input id="cpConfirm" type="password" placeholder="Repeat new password">
+    </div>
+    <div id="cpErr" class="login-err hidden" style="margin-top:8px"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('changePwModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitChangePw()">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── IMPORT MODAL ─────────────────────────────────────────── -->
+<div class="modal-backdrop" id="importModal" onclick="closeOnBackdrop(event,'importModal')">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">Import Contacts (CSV)</div>
+      <button class="modal-close" onclick="closeModal('importModal')">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">
+      Upload a CSV file with columns: <span class="mono" style="color:var(--accent)">name, phone, email, address, company, notes, tags, favorite</span>
+    </p>
+    <input type="file" id="importFile" accept=".csv" style="margin-bottom:14px">
+    <div id="importResult" class="hidden" style="margin-top:10px"></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── VIEW CONTACT MODAL ───────────────────────────────────── -->
+<div class="modal-backdrop" id="viewModal" onclick="closeOnBackdrop(event,'viewModal')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div id="viewAvatar" style="width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0"></div>
+      <div style="flex:1;padding:0 12px">
+        <div class="modal-title" id="viewName"></div>
+        <div style="font-size:12px;color:var(--text3)" id="viewCompany"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+    </div>
+    <div id="viewBody"></div>
+    <div class="form-actions">
+      <button class="btn btn-danger btn-sm" id="viewDeleteBtn">🗑 Delete</button>
+      <button class="btn btn-ghost btn-sm" id="viewEditBtn">✏️ Edit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── State ──────────────────────────────────────────────────── */
+const state = {
+  token: null, username: null, role: null,
+  contacts: [], page: 1, total: 0, perPage: 30,
+  query: '', tagFilter: '', favOnly: false,
+  allTags: [], stats: {},
+  editingId: null,
+  tokenExpiry: null,
+  auditPage: 1,
+};
+
+/* ─── API ────────────────────────────────────────────────────── */
+const API = async (method, path, body, isForm = false) => {
+  const opts = {
+    method,
+    headers: state.token ? { Authorization: `Bearer ${state.token}` } : {}
+  };
+  if (body && !isForm) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  } else if (body && isForm) {
+    opts.body = body; // FormData
+  }
+  const r = await fetch(path, opts);
+  if (r.status === 401) { logout(); return null; }
+  return r;
+};
+
+/* ─── Toast ──────────────────────────────────────────────────── */
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toastContainer').appendChild(el);
+  requestAnimationFrame(() => { el.classList.add('show'); });
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}
+
+/* ─── Auth ───────────────────────────────────────────────────── */
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+  btn.textContent = 'AUTHENTICATING…'; btn.disabled = true;
+  err.classList.add('hidden');
+
+  const r = await fetch('/api/login', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: document.getElementById('loginUser').value,
+      password: document.getElementById('loginPass').value,
+    })
+  });
+  const data = await r.json();
+
+  if (!r.ok) {
+    err.textContent = data.error || 'Login failed';
+    err.classList.remove('hidden');
+    btn.textContent = 'AUTHENTICATE'; btn.disabled = false;
+    return;
+  }
+
+  state.token    = data.token;
+  state.username = data.username;
+  state.role     = data.role;
+  state.tokenExpiry = Date.now() + data.expires * 1000;
+
+  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('mainApp').classList.remove('hidden');
+  document.getElementById('sidebarUsername').textContent = data.username;
+  document.getElementById('sidebarRole').textContent = data.role.toUpperCase();
+
+  if (data.role === 'admin') {
+    document.getElementById('nav-admin').style.display = '';
+  }
+
+  startSessionTimer();
+  showPage('contacts');
+  toast(`Welcome back, ${data.username}!`, 'success');
+}
+
+function logout() {
+  if (state.token) API('POST', '/api/logout');
+  state.token = null; state.username = null; state.role = null;
+  document.getElementById('mainApp').classList.add('hidden');
+  document.getElementById('loginPage').classList.remove('hidden');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginErr').classList.add('hidden');
+  const btn = document.getElementById('loginBtn');
+  btn.textContent = 'AUTHENTICATE'; btn.disabled = false;
+  clearInterval(state._timerInterval);
+  toast('Logged out securely', 'info');
+}
+
+function startSessionTimer() {
+  clearInterval(state._timerInterval);
+  state._timerInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.floor((state.tokenExpiry - Date.now()) / 1000));
+    const el = document.getElementById('sessionTimerEl');
+    const m = Math.floor(remaining / 60), s = remaining % 60;
+    el.textContent = `Session: ${m}:${s.toString().padStart(2,'0')}`;
+    el.className = `session-timer${remaining < 120 ? remaining < 60 ? ' crit' : ' warn' : ''}`;
+    if (remaining === 0) { toast('Session expired', 'warn'); logout(); }
+  }, 1000);
+}
+
+/* ─── Page Navigation ────────────────────────────────────────── */
+function showPage(name) {
+  ['contacts','favorites','audit','admin'].forEach(p => {
+    document.getElementById(`page-${p}`)?.classList.add('hidden');
+    document.getElementById(`nav-${p}`)?.classList.remove('active');
+  });
+  document.getElementById(`page-${name}`)?.classList.remove('hidden');
+  document.getElementById(`nav-${name}`)?.classList.add('active');
+
+  const titles = { contacts:'Contacts', favorites:'Favorites', audit:'Audit Log', admin:'Admin Panel' };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+
+  const actions = document.getElementById('topbarActions');
+  actions.innerHTML = '';
+
+  if (name === 'contacts')  loadContacts();
+  if (name === 'favorites') loadFavorites();
+  if (name === 'audit')     loadAudit();
+  if (name === 'admin')     loadAdmin();
+}
+
+/* ─── Contacts ───────────────────────────────────────────────── */
+let _searchTimer;
+function debounceSearch() { clearTimeout(_searchTimer); _searchTimer = setTimeout(() => { state.page = 1; loadContacts(); }, 300); }
+
+async function loadContacts(append = false) {
+  if (!append) state.page = 1;
+  const q       = document.getElementById('searchInput').value;
+  const sortRaw = document.getElementById('sortSelect').value;
+  const [sort, order] = sortRaw.includes('_desc') ? [sortRaw.replace('_desc',''), 'desc'] : [sortRaw, 'asc'];
+
+  const params = new URLSearchParams({
+    q, sort, order, page: state.page, per_page: state.perPage,
+    ...(state.tagFilter  ? { tag: state.tagFilter }  : {}),
+    ...(state.favOnly    ? { favorites: 'true' }      : {}),
+  });
+
+  const r = await API('GET', `/api/contacts?${params}`);
+  if (!r) return;
+  const data = await r.json();
+
+  state.total    = data.total;
+  state.allTags  = data.tags || [];
+  state.stats    = data.stats || {};
+
+  document.getElementById('statTotal').textContent    = state.stats.total ?? '—';
+  document.getElementById('statFavs').textContent     = state.stats.favorites ?? '—';
+  document.getElementById('statFiltered').textContent = data.total;
+
+  renderTagFilter();
+
+  const grid = document.getElementById('contactGrid');
+  if (!append) grid.innerHTML = '';
+
+  if (data.contacts.length === 0 && !append) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state-icon">📭</div>
+      <h3>No contacts found</h3>
+      <p>${q || state.tagFilter ? 'Try a different search term.' : 'Click "+ Add Contact" to get started.'}</p>
+    </div>`;
+  } else {
+    data.contacts.forEach(c => grid.appendChild(buildContactCard(c)));
+    if (append) state.contacts.push(...data.contacts);
+    else state.contacts = data.contacts;
+  }
+
+  const lmw = document.getElementById('loadMoreWrap');
+  const shown = (state.page - 1) * state.perPage + data.contacts.length;
+  lmw.classList.toggle('hidden', shown >= data.total);
+}
+
+function loadMoreContacts() { state.page++; loadContacts(true); }
+
+async function loadFavorites() {
+  const q = document.getElementById('favSearchInput').value;
+  const r = await API('GET', `/api/contacts?favorites=true&q=${encodeURIComponent(q)}&sort=name&per_page=200`);
+  if (!r) return;
+  const data = await r.json();
+  const grid = document.getElementById('favGrid');
+  grid.innerHTML = '';
+  if (!data.contacts.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state-icon">⭐</div>
+      <h3>No favorites yet</h3>
+      <p>Click the star icon on any contact to add them here.</p>
+    </div>`;
+  } else {
+    data.contacts.forEach(c => grid.appendChild(buildContactCard(c)));
+  }
+}
+
+function renderTagFilter() {
+  const row = document.getElementById('tagFilterRow');
+  row.innerHTML = '';
+  if (!state.allTags.length) return;
+  const all = document.createElement('div');
+  all.className = `chip${!state.tagFilter ? ' active' : ''}`;
+  all.textContent = 'All';
+  all.onclick = () => { state.tagFilter = ''; state.page = 1; loadContacts(); };
+  row.appendChild(all);
+  state.allTags.forEach(t => {
+    const chip = document.createElement('div');
+    chip.className = `chip${state.tagFilter === t ? ' active' : ''}`;
+    chip.textContent = `# ${t}`;
+    chip.onclick = () => { state.tagFilter = state.tagFilter === t ? '' : t; state.page = 1; loadContacts(); };
+    row.appendChild(chip);
+  });
+}
+
+function toggleFavFilter() {
+  state.favOnly = !state.favOnly;
+  state.page = 1;
+  document.getElementById('favFilterBtn').classList.toggle('active', state.favOnly);
+  loadContacts();
+}
+
+/* ─── Contact Card ───────────────────────────────────────────── */
+const AVATAR_COLORS = [
+  ['#00e5ff20','#00e5ff'], ['#7c3aed20','#a78bfa'],
+  ['#10b98120','#10b981'], ['#f59e0b20','#f59e0b'],
+  ['#ef444420','#ef4444'], ['#ec489920','#f472b6'],
+];
+
+function avatarColor(name) {
+  const i = [...name].reduce((a,c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[i];
+}
+
+function initials(name) {
+  return name.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase() || '?';
+}
+
+function buildContactCard(c) {
+  const card = document.createElement('div');
+  card.className = 'contact-card';
+  const [bg, fg] = avatarColor(c.name);
+
+  const tags = (c.tags||[]).map(t => `<span class="badge">${t}</span>`).join('');
+
+  card.innerHTML = `
+    <button class="cc-fav${c.favorite?' active':''}" onclick="toggleFav(event,'${c.id}',this)" title="${c.favorite?'Unstar':'Star'}">★</button>
+    <div class="cc-header">
+      <div class="cc-avatar" style="background:${bg};color:${fg};border:1px solid ${fg}40">${initials(c.name)}</div>
+      <div class="cc-info">
+        <div class="cc-name">${esc(c.name)}</div>
+        <div class="cc-company">${esc(c.company||'')}</div>
+      </div>
+    </div>
+    ${c.phone ? `<div class="cc-field"><span class="ico">📞</span>${esc(c.phone)}</div>` : ''}
+    ${c.email ? `<div class="cc-field"><span class="ico">✉️</span>${esc(c.email)}</div>` : ''}
+    ${c.address ? `<div class="cc-field"><span class="ico">📍</span>${esc(c.address)}</div>` : ''}
+    ${tags ? `<div class="cc-tags">${tags}</div>` : ''}
+    <div class="cc-actions">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openViewModal(event,'${c.id}')">View</button>
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openEditModal(event,'${c.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteContact(event,'${c.id}')">🗑</button>
+    </div>
+  `;
+  return card;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ─── Favorite Toggle ────────────────────────────────────────── */
+async function toggleFav(e, id, btn) {
+  e.stopPropagation();
+  const r = await API('POST', `/api/contacts/${id}/favorite`);
+  if (!r) return;
+  const data = await r.json();
+  btn.classList.toggle('active', data.favorite);
+  // Update stats
+  loadContacts();
+}
+
+/* ─── View Modal ─────────────────────────────────────────────── */
+async function openViewModal(e, id) {
+  e.stopPropagation();
+  const r = await API('GET', `/api/contacts/${id}`);
+  if (!r) return;
+  const c = await r.json();
+  const [bg, fg] = avatarColor(c.name);
+
+  document.getElementById('viewAvatar').style.cssText = `width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;background:${bg};color:${fg};border:1px solid ${fg}40`;
+  document.getElementById('viewAvatar').textContent = initials(c.name);
+  document.getElementById('viewName').textContent = c.name;
+  document.getElementById('viewCompany').textContent = c.company || '';
+
+  const fields = [
+    ['📞 Phone', c.phone], ['✉️ Email', c.email],
+    ['📍 Address', c.address], ['📝 Notes', c.notes],
+    ['🗓 Added', c.created ? new Date(c.created).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : ''],
+  ].filter(([,v]) => v);
+  const tags = (c.tags||[]).map(t=>`<span class="badge">${esc(t)}</span>`).join(' ');
+
+  document.getElementById('viewBody').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      ${fields.map(([l,v]) => `<div class="cc-field"><span class="ico" style="width:100px;color:var(--text3);font-size:12px">${l}</span><span>${esc(v)}</span></div>`).join('')}
+    </div>
+    ${tags ? `<div style="margin-top:8px">${tags}</div>` : ''}
+    ${c.favorite ? '<div style="margin-top:8px"><span class="badge badge-warn">⭐ Favorite</span></div>' : ''}
+  `;
+
+  document.getElementById('viewEditBtn').onclick = () => { closeModal('viewModal'); openEditModal({stopPropagation:()=>{}}, id); };
+  document.getElementById('viewDeleteBtn').onclick = () => { closeModal('viewModal'); deleteContact({stopPropagation:()=>{}}, id); };
+
+  openModal('viewModal');
+}
+
+/* ─── Add / Edit Modal ───────────────────────────────────────── */
+function openAddModal() {
+  state.editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add Contact';
+  document.getElementById('modalSubmitBtn').textContent = 'Save Contact';
+  ['fName','fPhone','fEmail','fCompany','fAddress','fNotes','fTags'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fFavorite').checked = false;
+  document.getElementById('modalErr').classList.add('hidden');
+  openModal('contactModal');
+}
+
+async function openEditModal(e, id) {
+  e.stopPropagation();
+  const r = await API('GET', `/api/contacts/${id}`);
+  if (!r) return;
+  const c = await r.json();
+  state.editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Contact';
+  document.getElementById('modalSubmitBtn').textContent = 'Update Contact';
+  document.getElementById('fName').value    = c.name    || '';
+  document.getElementById('fPhone').value   = c.phone   || '';
+  document.getElementById('fEmail').value   = c.email   || '';
+  document.getElementById('fCompany').value = c.company || '';
+  document.getElementById('fAddress').value = c.address || '';
+  document.getElementById('fNotes').value   = c.notes   || '';
+  document.getElementById('fTags').value    = (c.tags||[]).join(', ');
+  document.getElementById('fFavorite').checked = !!c.favorite;
+  document.getElementById('modalErr').classList.add('hidden');
+  openModal('contactModal');
+}
+
+async function submitContact() {
+  const payload = {
+    name:     document.getElementById('fName').value.trim(),
+    phone:    document.getElementById('fPhone').value.trim(),
+    email:    document.getElementById('fEmail').value.trim(),
+    company:  document.getElementById('fCompany').value.trim(),
+    address:  document.getElementById('fAddress').value.trim(),
+    notes:    document.getElementById('fNotes').value.trim(),
+    tags:     document.getElementById('fTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    favorite: document.getElementById('fFavorite').checked,
+  };
+
+  const isEdit = !!state.editingId;
+  const r = await API(isEdit ? 'PUT' : 'POST',
+    isEdit ? `/api/contacts/${state.editingId}` : '/api/contacts', payload);
+
+  if (!r) return;
+  const data = await r.json();
+
+  if (!r.ok) {
+    const errEl = document.getElementById('modalErr');
+    errEl.textContent = Array.isArray(data.error) ? data.error.join(' · ') : (data.error || 'Error');
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  closeModal('contactModal');
+  toast(isEdit ? 'Contact updated!' : 'Contact added!', 'success');
+  loadContacts();
+}
+
+/* ─── Delete ─────────────────────────────────────────────────── */
+async function deleteContact(e, id) {
+  e.stopPropagation();
+  if (!confirm('Delete this contact?')) return;
+  const r = await API('DELETE', `/api/contacts/${id}`);
+  if (!r) return;
+  if (r.ok) { toast('Contact deleted', 'warn'); loadContacts(); }
+}
+
+/* ─── Export ─────────────────────────────────────────────────── */
+async function exportCSV() {
+  const a = document.createElement('a');
+  // Need to pass token; use fetch + blob
+  const r = await API('GET', '/api/contacts/export/csv');
+  if (!r || !r.ok) { toast('Export failed', 'error'); return; }
+  const blob = await r.blob();
+  a.href = URL.createObjectURL(blob);
+  a.download = 'contacts.csv';
+  a.click();
+  toast('Contacts exported!', 'success');
+}
+
+function openImportDialog() { openModal('importModal'); }
+
+async function submitImport() {
+  const file = document.getElementById('importFile').files[0];
+  if (!file) { toast('Select a CSV file first', 'warn'); return; }
+  const fd = new FormData(); fd.append('file', file);
+  const r = await API('POST', '/api/contacts/import/csv', fd, true);
+  if (!r) return;
+  const data = await r.json();
+  const el = document.getElementById('importResult');
+  el.innerHTML = r.ok
+    ? `<span class="badge badge-green">✓ Added: ${data.added} &nbsp; Skipped: ${data.skipped}</span>`
+    : `<span class="badge badge-red">Error: ${data.error}</span>`;
+  el.classList.remove('hidden');
+  if (r.ok) { toast(`Imported ${data.added} contacts`, 'success'); loadContacts(); }
+}
+
+/* ─── Audit Log ──────────────────────────────────────────────── */
+const ACTION_COLORS = {
+  LOGIN_OK: 'badge-green', LOGIN_FAIL: 'badge-red',
+  ADD_CONTACT: 'badge-green', DELETE_CONTACT: 'badge-red',
+  EDIT_CONTACT: 'badge-warn', EXPORT_CSV: 'badge-purple',
+  IMPORT_CSV: 'badge-purple', PASSWORD_CHANGED: 'badge-warn',
+  LOGOUT: '', CREATE_USER: 'badge-green', DELETE_USER: 'badge-red',
+};
+
+async function loadAudit() {
+  const r = await API('GET', `/api/audit?page=${state.auditPage}`);
+  if (!r) return;
+  const data = await r.json();
+  const tbody = document.getElementById('auditBody');
+  tbody.innerHTML = data.log.map(e => `
+    <tr>
+      <td class="mono" style="color:var(--text3);font-size:11px">${new Date(e.timestamp).toLocaleString()}</td>
+      <td><span class="badge badge-purple">${esc(e.username)}</span></td>
+      <td><span class="action-badge badge ${ACTION_COLORS[e.action]||''}">${e.action}</span></td>
+      <td style="color:var(--text2)">${esc(e.detail)}</td>
+    </tr>`).join('');
+
+  const pag = document.getElementById('auditPagination');
+  const total = data.total;
+  pag.innerHTML = `
+    <span>Showing ${(state.auditPage-1)*50+1}–${Math.min(state.auditPage*50,total)} of ${total} events</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" ${state.auditPage<=1?'disabled':''} onclick="state.auditPage--;loadAudit()">← Prev</button>
+      <button class="btn btn-ghost btn-sm" ${state.auditPage*50>=total?'disabled':''} onclick="state.auditPage++;loadAudit()">Next →</button>
+    </div>`;
+}
+
+/* ─── Admin ──────────────────────────────────────────────────── */
+async function loadAdmin() {
+  const r = await API('GET', '/api/admin/users');
+  if (!r) return;
+  const users = await r.json();
+  const list  = document.getElementById('userList');
+  list.innerHTML = users.map(u => `
+    <div class="user-row">
+      <div class="user-avatar">${u.username[0].toUpperCase()}</div>
+      <div class="user-info">
+        <div class="user-name">${esc(u.username)}</div>
+        <div class="user-meta">${u.role.toUpperCase()} · Added ${new Date(u.created).toLocaleDateString()}</div>
+      </div>
+      <span class="badge ${u.role==='admin'?'badge-purple':''}">${u.role}</span>
+      ${u.username !== state.username ? `<button class="btn btn-danger btn-sm btn-icon" onclick="deleteUser('${u.username}')">🗑</button>` : ''}
+    </div>`).join('');
+}
+
+async function createUser() {
+  const payload = {
+    username: document.getElementById('newUsername').value.trim(),
+    password: document.getElementById('newPassword').value,
+    role:     document.getElementById('newRole').value,
+  };
+  const r = await API('POST', '/api/admin/users', payload);
+  if (!r) return;
+  const data = await r.json();
+  if (!r.ok) { toast(data.error || 'Error', 'error'); return; }
+  toast(`User "${payload.username}" created`, 'success');
+  ['newUsername','newPassword'].forEach(id => document.getElementById(id).value = '');
+  loadAdmin();
+}
+
+async function deleteUser(username) {
+  if (!confirm(`Delete user "${username}"?`)) return;
+  const r = await API('DELETE', `/api/admin/users/${username}`);
+  if (r?.ok) { toast(`User "${username}" deleted`, 'warn'); loadAdmin(); }
+}
+
+/* ─── Change Password ────────────────────────────────────────── */
+function showChangePw() { openModal('changePwModal'); }
+
+async function submitChangePw() {
+  const old = document.getElementById('cpOld').value;
+  const nw  = document.getElementById('cpNew').value;
+  const cf  = document.getElementById('cpConfirm').value;
+  const err = document.getElementById('cpErr');
+
+  if (nw !== cf) { err.textContent = 'Passwords do not match'; err.classList.remove('hidden'); return; }
+
+  const r = await API('POST', '/api/change-password', { old_password: old, new_password: nw });
+  if (!r) return;
+  const data = await r.json();
+  if (!r.ok) { err.textContent = data.error; err.classList.remove('hidden'); return; }
+  toast('Password updated!', 'success');
+  closeModal('changePwModal');
+  ['cpOld','cpNew','cpConfirm'].forEach(id => document.getElementById(id).value='');
+}
+
+/* ─── Modal Helpers ──────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeOnBackdrop(e, id) { if (e.target.id === id) closeModal(id); }
+
+/* ─── Init ───────────────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+});
+</script>
+</body>
+</html>

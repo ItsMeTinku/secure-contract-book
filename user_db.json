@@ -1,4 +1,20 @@
 {
-  "username": "guru",
-  "password": "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+  "admin": {
+    "username": "admin",
+    "password": {
+      "hash": "4bc5d98fe524b0a84f9f16207349b0d1b95f3d94851acd0cb23508de59c35f0d",
+      "salt": "e371c4e40015f82eb64122ae1690d043d22a8aa4ee8f260df36fb9f72dd2c38a"
+    },
+    "role": "admin",
+    "created": "2026-05-09T03:56:13.224899+00:00"
+  },
+  "user1": {
+    "username": "user1",
+    "password": {
+      "hash": "e0af238027847b7b9aff27ca5d7ba3254b0417f697aebf4f54c77291b983057d",
+      "salt": "57701623ad9a78721844ccd82bf817ee62793d4bddf2462a10a3ea1f5704cb5e"
+    },
+    "role": "user",
+    "created": "2026-05-09T04:01:40.332334+00:00"
+  }
 }
