@@ -117,21 +117,21 @@ secure_contact_book_v2/
 ┌─────────────────────────────────────────────────────────┐
 │               Flask REST API  (app.py)                  │
 │                                                         │
-│  ┌──────────────┐  ┌─────────────┐  ┌───────────────┐  │
-│  │  Auth Layer  │  │  Business   │  │  Admin Layer  │  │
-│  │  /api/login  │  │   Logic     │  │ /api/admin/*  │  │
-│  │  /api/logout │  │ /api/       │  │  (role guard) │  │
-│  │  JWT verify  │  │ contacts/*  │  └───────────────┘  │
-│  └──────────────┘  └─────────────┘                     │
+│  ┌──────────────┐  ┌─────────────┐  ┌───────────────┐   │
+│  │  Auth Layer  │  │  Business   │  │  Admin Layer  │   │
+│  │  /api/login  │  │   Logic     │  │ /api/admin/*  │   │
+│  │  /api/logout │  │ /api/       │  │  (role guard) │   │
+│  │  JWT verify  │  │ contacts/*  │  └───────────────┘   │
+│  └──────────────┘  └─────────────┘                      │
 │        │                 │                              │
 │        ▼                 ▼                              │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │           Data & Crypto Layer                    │  │
-│  │             (crypto_util.py)                     │  │
-│  │  PBKDF2-HMAC password hash · Fernet field enc    │  │
-│  └──────────────────────────────────────────────────┘  │
-│        │                                               │
-└────────┼───────────────────────────────────────────────┘
+│  ┌──────────────────────────────────────────────────┐   │
+│  │           Data & Crypto Layer                    │   │
+│  │             (crypto_util.py)                     │   │
+│  │  PBKDF2-HMAC password hash · Fernet field enc    │   │
+│  └──────────────────────────────────────────────────┘   │
+│        │                                                │
+└────────┼────────────────────────────────────────────────┘
          │  File I/O (JSON)
          ▼
 ┌────────────────────────────────────────────────────────┐
@@ -188,7 +188,7 @@ Browser                          Flask API                      Storage
   │                                  │── create_token()             │
   │                                  │   (HS256 JWT, 1hr expiry)    │
   │                                  │                              │
-  │◄─ 200 {token, role, expires} ───│                              │
+  │◄─ 200 {token, role, expires} ─── │                              │
   │                                  │── append_audit("login") ────►│
   │                                  │                              │
   │  [Store JWT in memory]           │                              │
@@ -212,7 +212,7 @@ Browser                          Flask API                      Storage
   │                                  │── filter by owner_username   │
   │                                  │── apply search/tag/sort/page │
   │                                  │                              │
-  │◄─ 200 {contacts[], total} ──────│                              │
+  │◄─ 200 {contacts[], total} ────── │                              │
   │                                  │                              │
   │── POST /api/contacts ───────────►│                              │
   │   {name, phone, email, ...}      │── validate_contact()         │
@@ -220,8 +220,8 @@ Browser                          Flask API                      Storage
   │                                  │── encrypt_contact()          │
   │                                  │   (Fernet on 6 fields)       │
   │                                  │── append to contact_db.json ►│
-  │                                  │── append_audit("add") ───────►│
-  │◄─ 201 {contact} ───────────────│                              │
+  │                                  │── append_audit("add") ──────►│
+  │◄─ 201 {contact} ─────────────────│                              │
 ```
 
 ### 4. Data Encryption Workflow
@@ -287,16 +287,16 @@ Admin User                       Flask API
   │   Authorization: Bearer <JWT>    │── @require_admin decorator
   │                                  │   checks role == "admin"
   │                                  │── load user_db.json
-  │◄─ 200 [user list] ─────────────│
+  │◄─ 200 [user list] ───────────────│
   │                                  │
   │── POST /api/admin/users ────────►│── validate new username
   │   {username, password, role}     │── hash_password()
   │                                  │── save to user_db.json
-  │◄─ 201 {created} ───────────────│── append_audit("admin_create_user")
+  │◄─ 201 {created} ─────────────────│── append_audit("admin_create_user")
   │                                  │
   │── DELETE /api/admin/users/:u ───►│── prevent self-deletion
   │                                  │── remove from user_db.json
-  │◄─ 200 {deleted} ───────────────│── append_audit("admin_delete_user")
+  │◄─ 200 {deleted} ─────────────────│── append_audit("admin_delete_user")
 ```
 
 ---
