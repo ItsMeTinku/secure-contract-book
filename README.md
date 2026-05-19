@@ -85,21 +85,218 @@ Default credentials (if you skip setup): **admin / admin123**
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Project Architecture
+
+### Directory Structure
 
 ```
 secure_contact_book_v2/
-├── app.py            # Flask backend — all API routes
+├── app.py            # Flask backend — all API routes & business logic
 ├── crypto_util.py    # Encryption & password hashing utilities
 ├── setup.py          # First-run setup wizard
-├── requirements.txt
+├── requirements.txt  # Python dependencies
 ├── key.key           # Fernet encryption key (auto-generated) ⚠ BACK UP
 ├── user_db.json      # User accounts (passwords PBKDF2-hashed)
 ├── contact_db.json   # Encrypted contact records
 ├── audit_log.json    # Audit trail (last 500 entries)
 └── static/
-    ├── index.html    # Single-page frontend
+    ├── index.html    # Single-page frontend (HTML + CSS + JS, no framework)
     └── screenshots/  # README screenshots
+```
+
+### Layer Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Browser (Client)                     │
+│           static/index.html  ·  Vanilla JS SPA          │
+│   Login · Dashboard · Add/Edit · Admin · Audit Log      │
+└────────────────────┬────────────────────────────────────┘
+                     │  HTTP/JSON  (Bearer JWT)
+                     ▼
+┌─────────────────────────────────────────────────────────┐
+│               Flask REST API  (app.py)                  │
+│                                                         │
+│  ┌──────────────┐  ┌─────────────┐  ┌───────────────┐  │
+│  │  Auth Layer  │  │  Business   │  │  Admin Layer  │  │
+│  │  /api/login  │  │   Logic     │  │ /api/admin/*  │  │
+│  │  /api/logout │  │ /api/       │  │  (role guard) │  │
+│  │  JWT verify  │  │ contacts/*  │  └───────────────┘  │
+│  └──────────────┘  └─────────────┘                     │
+│        │                 │                              │
+│        ▼                 ▼                              │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │           Data & Crypto Layer                    │  │
+│  │             (crypto_util.py)                     │  │
+│  │  PBKDF2-HMAC password hash · Fernet field enc    │  │
+│  └──────────────────────────────────────────────────┘  │
+│        │                                               │
+└────────┼───────────────────────────────────────────────┘
+         │  File I/O (JSON)
+         ▼
+┌────────────────────────────────────────────────────────┐
+│                  Persistent Storage                    │
+│   user_db.json · contact_db.json · audit_log.json      │
+│   key.key (Fernet symmetric key)                       │
+└────────────────────────────────────────────────────────┘
+```
+
+### Component Responsibilities
+
+| Component | File | Responsibility |
+|---|---|---|
+| **SPA Frontend** | `static/index.html` | Renders all UI views, manages JWT in memory, calls REST API |
+| **API Server** | `app.py` | Route handling, input validation, auth guards, rate limiting, audit logging |
+| **Crypto Utilities** | `crypto_util.py` | Fernet encryption/decryption, PBKDF2 password hashing, token generation |
+| **Setup Wizard** | `setup.py` | First-run key generation, default admin creation, DB initialisation |
+| **User Store** | `user_db.json` | User accounts with PBKDF2-hashed passwords and role assignments |
+| **Contact Store** | `contact_db.json` | AES-encrypted contact records with per-user ownership metadata |
+| **Audit Store** | `audit_log.json` | Timestamped CRUD event trail (capped at 500 entries) |
+| **Encryption Key** | `key.key` | Fernet symmetric key used for all field-level contact encryption |
+
+---
+
+## 🔄 Application Workflow
+
+### 1. First-Run Setup
+
+```
+python setup.py
+       │
+       ├─► Generate Fernet key → key.key
+       ├─► Prompt for admin username & password
+       ├─► Hash password (PBKDF2-HMAC-SHA256, 260k iterations, random salt)
+       ├─► Write admin record → user_db.json
+       └─► Initialise empty contact_db.json & audit_log.json
+```
+
+### 2. User Authentication Flow
+
+```
+Browser                          Flask API                      Storage
+  │                                  │                              │
+  │── POST /api/login ──────────────►│                              │
+  │   {username, password}           │── load user_db.json ────────►│
+  │                                  │◄─ user record ───────────────│
+  │                                  │                              │
+  │                                  │── check_password()           │
+  │                                  │   (PBKDF2 verify or          │
+  │                                  │    legacy SHA-256 migrate)   │
+  │                                  │                              │
+  │                                  │── rate_limit check (10/min)  │
+  │                                  │                              │
+  │                                  │── create_token()             │
+  │                                  │   (HS256 JWT, 1hr expiry)    │
+  │                                  │                              │
+  │◄─ 200 {token, role, expires} ───│                              │
+  │                                  │── append_audit("login") ────►│
+  │                                  │                              │
+  │  [Store JWT in memory]           │                              │
+  │  [Start countdown timer]         │                              │
+```
+
+### 3. Contact CRUD Workflow
+
+```
+Browser                          Flask API                      Storage
+  │                                  │                              │
+  │── GET /api/contacts?q=... ──────►│                              │
+  │   Authorization: Bearer <JWT>    │── decode_token() verify      │
+  │                                  │                              │
+  │                                  │── load contact_db.json ─────►│
+  │                                  │◄─ encrypted records ─────────│
+  │                                  │                              │
+  │                                  │── decrypt_contact() each     │
+  │                                  │   (Fernet field decryption)  │
+  │                                  │                              │
+  │                                  │── filter by owner_username   │
+  │                                  │── apply search/tag/sort/page │
+  │                                  │                              │
+  │◄─ 200 {contacts[], total} ──────│                              │
+  │                                  │                              │
+  │── POST /api/contacts ───────────►│                              │
+  │   {name, phone, email, ...}      │── validate_contact()         │
+  │                                  │── duplicate check (per-user) │
+  │                                  │── encrypt_contact()          │
+  │                                  │   (Fernet on 6 fields)       │
+  │                                  │── append to contact_db.json ►│
+  │                                  │── append_audit("add") ───────►│
+  │◄─ 201 {contact} ───────────────│                              │
+```
+
+### 4. Data Encryption Workflow
+
+Every contact write goes through field-level encryption before hitting disk:
+
+```
+Raw Contact Data
+  {name: "Alice", phone: "+44...", email: "alice@...", ...}
+            │
+            ▼
+    encrypt_contact()  ◄── Fernet key (loaded from key.key)
+            │
+            │  Fernet(key).encrypt(field.encode())
+            │  applied individually to:
+            │  name · phone · email · address · company · notes
+            │
+            ▼
+Encrypted Contact Record (stored in contact_db.json)
+  {name: "gAAAAAB...", phone: "gAAAAAB...", email: "gAAAAAB...", ...
+   id: "uuid", owner: "alice", tags: [...], favorite: false}
+            │
+            │  On read: decrypt_contact() reverses each field
+            ▼
+Plaintext returned to authenticated user only
+```
+
+### 5. Request Lifecycle (every protected endpoint)
+
+```
+Incoming Request
+       │
+       ▼
+  @require_auth decorator
+       │
+       ├─► Extract "Authorization: Bearer <token>" header
+       ├─► decode_token() — verify HS256 signature & expiry
+       │
+       ├── FAIL → 401 Unauthorized
+       │
+       └── PASS → inject {username, role} into request context
+                       │
+                       ▼
+              Route Handler
+                       │
+                       ├─► Input validation (validate_contact / manual checks)
+                       ├─► Ownership enforcement (filter by username)
+                       ├─► Business logic
+                       ├─► Crypto operations (encrypt/decrypt)
+                       ├─► Persist to JSON store
+                       └─► append_audit(action, detail)
+                                   │
+                                   ▼
+                          JSON Response → Browser
+```
+
+### 6. Admin Workflow
+
+```
+Admin User                       Flask API
+  │                                  │
+  │── GET /api/admin/users ─────────►│
+  │   Authorization: Bearer <JWT>    │── @require_admin decorator
+  │                                  │   checks role == "admin"
+  │                                  │── load user_db.json
+  │◄─ 200 [user list] ─────────────│
+  │                                  │
+  │── POST /api/admin/users ────────►│── validate new username
+  │   {username, password, role}     │── hash_password()
+  │                                  │── save to user_db.json
+  │◄─ 201 {created} ───────────────│── append_audit("admin_create_user")
+  │                                  │
+  │── DELETE /api/admin/users/:u ───►│── prevent self-deletion
+  │                                  │── remove from user_db.json
+  │◄─ 200 {deleted} ───────────────│── append_audit("admin_delete_user")
 ```
 
 ---
