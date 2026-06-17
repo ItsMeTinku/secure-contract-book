@@ -329,7 +329,7 @@ Admin User                       Flask API
 
 ---
 
-## 📡 API Reference
+##  API Reference
 
 All endpoints (except `/api/login`) require:
 ```
