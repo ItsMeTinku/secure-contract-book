@@ -36,7 +36,7 @@
   <img src="static/screenshots/screenshot_admin.png" alt="Admin Panel" width="90%">
 </p>
 
-### 📜 Audit Log
+###  Audit Log
 <p align="center">
   <img src="static/screenshots/screenshot_audit.png" alt="Audit Log" width="90%">
 </p>
@@ -65,7 +65,7 @@
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ```bash
 # 1. Install dependencies
@@ -85,7 +85,7 @@ Default credentials (if you skip setup): **admin / admin123**
 
 ---
 
-## 🏗️ Project Architecture
+##  Project Architecture
 
 ### Directory Structure
 
@@ -156,7 +156,7 @@ secure_contact_book_v2/
 
 ---
 
-## 🔄 Application Workflow
+##  Application Workflow
 
 ### 1. First-Run Setup
 
