@@ -31,7 +31,7 @@
   <img src="static/screenshots/screenshot_add_contact.png" alt="Add Contact Modal" width="90%">
 </p>
 
-### ⚙️ Admin Panel
+###  Admin Panel
 <p align="center">
   <img src="static/screenshots/screenshot_admin.png" alt="Admin Panel" width="90%">
 </p>
