@@ -26,7 +26,7 @@
   <img src="static/screenshots/screenshot_dashboard.png" alt="Contacts Dashboard" width="90%">
 </p>
 
-### ➕ Add Contact Modal
+###  Add Contact Modal
 <p align="center">
   <img src="static/screenshots/screenshot_add_contact.png" alt="Add Contact Modal" width="90%">
 </p>
