@@ -16,7 +16,7 @@
 
 ## 📸 Screenshots
 
-### 🔐 Login Page
+###  Login Page
 <p align="center">
   <img src="static/screenshots/screenshot_login.png" alt="Login Page" width="90%">
 </p>
