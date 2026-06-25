@@ -21,7 +21,7 @@
   <img src="static/screenshots/screenshot_login.png" alt="Login Page" width="90%">
 </p>
 
-### 📋 Contacts Dashboard
+###  Contacts Dashboard
 <p align="center">
   <img src="static/screenshots/screenshot_dashboard.png" alt="Contacts Dashboard" width="90%">
 </p>
