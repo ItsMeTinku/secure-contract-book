@@ -43,7 +43,7 @@
 
 ---
 
-## ✨ What's New in v2
+##  What's New in v2
 
 | Feature | v1 (Basic) | v2 (Advanced) |
 |---|---|---|
