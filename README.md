@@ -241,7 +241,7 @@ Raw Contact Data
             │
             ▼
 Encrypted Contact Record (stored in contact_db.json)
-  {name: "gAAAAAB...", phone: "gAAAAAB...", email: "gAAAAAB...", ...
+  {name: "gAAAAAB...", phone: "gAAAAAB...", email: "gAAAAAB...", ..
    id: "uuid", owner: "alice", tags: [...], favorite: false}
             │
             │  On read: decrypt_contact() reverses each field
