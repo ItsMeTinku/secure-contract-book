@@ -391,4 +391,5 @@ Bob Jones,+1 555 000 0000,bob@example.com,,Freelance,,friend,false
 - **favorite**: `true` or `false`
 - All fields except `name` and `phone` are optional
 
-Thanks for reading ❤️
+Thanks for reading 
+Built with Python, Flask, and ❤️
