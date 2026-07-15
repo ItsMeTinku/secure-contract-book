@@ -14,7 +14,7 @@
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 ###  Login Page
 <p align="center">
