@@ -379,7 +379,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 📥 CSV Import Format
+##  CSV Import Format
 
 ```csv
 name,phone,email,address,company,notes,tags,favorite
