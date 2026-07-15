@@ -390,3 +390,5 @@ Bob Jones,+1 555 000 0000,bob@example.com,,Freelance,,friend,false
 - **tags**: pipe-separated (`work|vip|friend`)
 - **favorite**: `true` or `false`
 - All fields except `name` and `phone` are optional
+
+Thanks for reading ❤️
